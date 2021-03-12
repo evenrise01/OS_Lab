@@ -476,13 +476,13 @@ void round_robin(){
     sort(p,p+n,compareArrival);
 
 
-    queue <int> q;
+    queue <int> q; //Using a FIFO Queue
     int current_time = 0; //Variable to keep track of the time
     q.push(0);
-    int completed = 0;
+    int completed = 0; //Keep track of the completion of the process
     int mark[100]; //Array to check if the process is in the queue or not
-    memset(mark,0,sizeof(mark));
-    mark[0] = 1;
+    memset(mark,0,sizeof(mark)); //Mark all the array 'False'
+    mark[0] = 1; //Initialise first element of array Mark as 'True'
 
     while(completed != n) {
         idx = q.front();
@@ -495,12 +495,14 @@ void round_robin(){
         }
 
         if(burst_remaining[idx]-tq > 0) {
-            burst_remaining[idx] -= tq;
-            current_time += tq;
+            burst_remaining[idx] -= tq; //burst_remaining = burst_remanining - Quantum_time
+            current_time += tq; //Current_time = Current_time + Quantum_time
         }
+        
+        // if burst_remaining[idx] <= 0 then calculate CT, TAT, WT, RT for the process
         else {
-            current_time += burst_remaining[idx];
-            burst_remaining[idx] = 0;
+            current_time += burst_remaining[idx]; //current_time = current_time + burst_remaining[idx]
+            burst_remaining[idx] = 0; //Mark the element 'False'
             completed++;
 
             p[idx].completion_time = current_time;
