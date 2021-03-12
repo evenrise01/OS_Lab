@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-//GLobal Scope Variables
+//Global Scope Variables
 
 int n;
 float avg_turnaround_time;
@@ -37,6 +37,35 @@ bool compareArrival(process p1, process p2)
 bool compareID(process p1, process p2) 
 {  
     return p1.pid < p2.pid;
+
+
+}
+
+void calculate_average(process p[], int n){
+    avg_turnaround_time = (float) total_turnaround_time / n;
+    avg_waiting_time = (float) total_waiting_time / n;
+    avg_response_time = (float) total_response_time / n;
+    cpu_utilisation = ((p[n-1].completion_time - total_idle_time) / (float) p[n-1].completion_time)*100;
+    throughput = float(n) / (p[n-1].completion_time - p[0].arrival_time);
+
+}
+void print_table(process p[], int n){
+
+    cout<<endl;
+    cout<<"#P\t"<<"AT\t"<<"BT\t"<<"ST\t"<<"CT\t"<<"TAT\t"<<"WT\t"<<"RT\t"<<"\n"<<endl;
+
+    for(int i = 0; i < n; i++) {
+        cout<<p[i].pid<<"\t"<<p[i].arrival_time<<"\t"<<p[i].burst_time<<"\t"<<p[i].start_time<<"\t"<<p[i].completion_time<<"\t"<<p[i].turnaround_time<<"\t"<<p[i].waiting_time<<"\t"<<p[i].response_time<<"\t"<<"\n"<<endl;
+    }
+}
+
+void print_average(process p[], int n){
+
+    cout<<"Average Turnaround Time = "<<avg_turnaround_time<<endl;
+    cout<<"Average Waiting Time = "<<avg_waiting_time<<endl;
+    cout<<"Average Response Time = "<<avg_response_time<<endl;
+    cout<<"CPU Utilization = "<<cpu_utilisation<<"%"<<endl;
+    cout<<"Throughput = "<<throughput<<" process/unit time"<<endl;
 }
 
 //First Come First Serve
@@ -74,25 +103,13 @@ void FCFS() {
         total_idle_time += (i == 0)?(p[i].arrival_time):(p[i].start_time - p[i-1].completion_time);
     }
 
-    avg_turnaround_time = (float) total_turnaround_time / n;
-    avg_waiting_time = (float) total_waiting_time / n;
-    avg_response_time = (float) total_response_time / n;
-    cpu_utilisation = ((p[n-1].completion_time - total_idle_time) / (float) p[n-1].completion_time)*100;
-    throughput = float(n) / (p[n-1].completion_time - p[0].arrival_time);
-
+    calculate_average(p,n);
+   
     sort(p,p+n,compareID);
 
-    cout<<endl;
-    cout<<"#P\t"<<"AT\t"<<"BT\t"<<"ST\t"<<"CT\t"<<"TAT\t"<<"WT\t"<<"RT\t"<<"\n"<<endl;
+    print_table(p, n);
 
-    for(int i = 0; i < n; i++) {
-        cout<<p[i].pid<<"\t"<<p[i].arrival_time<<"\t"<<p[i].burst_time<<"\t"<<p[i].start_time<<"\t"<<p[i].completion_time<<"\t"<<p[i].turnaround_time<<"\t"<<p[i].waiting_time<<"\t"<<p[i].response_time<<"\t"<<"\n"<<endl;
-    }
-    cout<<"Average Turnaround Time = "<<avg_turnaround_time<<endl;
-    cout<<"Average Waiting Time = "<<avg_waiting_time<<endl;
-    cout<<"Average Response Time = "<<avg_response_time<<endl;
-    cout<<"CPU Utilization = "<<cpu_utilisation<<"%"<<endl;
-    cout<<"Throughput = "<<throughput<<" process/unit time"<<endl;
+    print_average(p, n);
 
 
 }
@@ -168,25 +185,9 @@ void SJF() {
         max_completion_time = max(max_completion_time,p[i].completion_time);
     }
 
-    avg_turnaround_time = (float) total_turnaround_time / n;
-    avg_waiting_time = (float) total_waiting_time / n;
-    avg_response_time = (float) total_response_time / n;
-    cpu_utilisation = ((max_completion_time - total_idle_time) / (float) max_completion_time )*100;
-    throughput = float(n) / (max_completion_time - min_arrival_time);
-
-    cout<<endl<<endl;
-
-    cout<<"#P\t"<<"AT\t"<<"BT\t"<<"ST\t"<<"CT\t"<<"TAT\t"<<"WT\t"<<"RT\t"<<"\n"<<endl;
-
-    for(int i = 0; i < n; i++) {
-        cout<<p[i].pid<<"\t"<<p[i].arrival_time<<"\t"<<p[i].burst_time<<"\t"<<p[i].start_time<<"\t"<<p[i].completion_time<<"\t"<<p[i].turnaround_time<<"\t"<<p[i].waiting_time<<"\t"<<p[i].response_time<<"\t"<<"\n"<<endl;
-    }
-    cout<<"Average Turnaround Time = "<<avg_turnaround_time<<endl;
-    cout<<"Average Waiting Time = "<<avg_waiting_time<<endl;
-    cout<<"Average Response Time = "<<avg_response_time<<endl;
-    cout<<"CPU Utilization = "<<cpu_utilisation<<"%"<<endl;
-    cout<<"Throughput = "<<throughput<<" process/unit time"<<endl;
-
+    calculate_average(p,n);
+    print_table(p, n);
+    print_average(p, n);
 
 }
 //Shortest Remaining Time First
@@ -211,6 +212,7 @@ void SRTF() {
         burst_remaining[i] = p[i].burst_time;
         cout<<endl;
     }
+    
 
     int current_time = 0;
     int completed = 0;
@@ -269,24 +271,9 @@ void SRTF() {
         max_completion_time = max(max_completion_time,p[i].completion_time);
     }
 
-    avg_turnaround_time = (float) total_turnaround_time / n;
-    avg_waiting_time = (float) total_waiting_time / n;
-    avg_response_time = (float) total_response_time / n;
-    cpu_utilisation = ((max_completion_time - total_idle_time) / (float) max_completion_time )*100;
-    throughput = float(n) / (max_completion_time - min_arrival_time);
-
-    cout<<endl<<endl;
-
-    cout<<"#P\t"<<"AT\t"<<"BT\t"<<"ST\t"<<"CT\t"<<"TAT\t"<<"WT\t"<<"RT\t"<<"\n"<<endl;
-
-    for(int i = 0; i < n; i++) {
-        cout<<p[i].pid<<"\t"<<p[i].arrival_time<<"\t"<<p[i].burst_time<<"\t"<<p[i].start_time<<"\t"<<p[i].completion_time<<"\t"<<p[i].turnaround_time<<"\t"<<p[i].waiting_time<<"\t"<<p[i].response_time<<"\t"<<"\n"<<endl;
-    }
-    cout<<"Average Turnaround Time = "<<avg_turnaround_time<<endl;
-    cout<<"Average Waiting Time = "<<avg_waiting_time<<endl;
-    cout<<"Average Response Time = "<<avg_response_time<<endl;
-    cout<<"CPU Utilization = "<<cpu_utilisation<<"%"<<endl;
-    cout<<"Throughput = "<<throughput<<" process/unit time"<<endl;
+    calculate_average(p,n);
+    print_table(p, n);
+    print_average(p, n);
 
 
 }
@@ -295,6 +282,7 @@ void NP_Priority() {
 
     struct process p[100];
     int is_completed[100];
+    //marking all elements in the array as 0
     memset(is_completed,0,sizeof(is_completed));
 
     cout << setprecision(2) << fixed;
@@ -364,24 +352,9 @@ void NP_Priority() {
         max_completion_time = max(max_completion_time,p[i].completion_time);
     }
 
-    avg_turnaround_time = (float) total_turnaround_time / n;
-    avg_waiting_time = (float) total_waiting_time / n;
-    avg_response_time = (float) total_response_time / n;
-    cpu_utilisation = ((max_completion_time - total_idle_time) / (float) max_completion_time )*100;
-    throughput = float(n) / (max_completion_time - min_arrival_time);
-
-    cout<<endl<<endl;
-
-    cout<<"#P\t"<<"AT\t"<<"BT\t"<<"PRI\t"<<"ST\t"<<"CT\t"<<"TAT\t"<<"WT\t"<<"RT\t"<<"\n"<<endl;
-
-    for(int i = 0; i < n; i++) {
-        cout<<p[i].pid<<"\t"<<p[i].arrival_time<<"\t"<<p[i].burst_time<<"\t"<<p[i].priority<<"\t"<<p[i].start_time<<"\t"<<p[i].completion_time<<"\t"<<p[i].turnaround_time<<"\t"<<p[i].waiting_time<<"\t"<<p[i].response_time<<"\t"<<"\n"<<endl;
-    }
-    cout<<"Average Turnaround Time = "<<avg_turnaround_time<<endl;
-    cout<<"Average Waiting Time = "<<avg_waiting_time<<endl;
-    cout<<"Average Response Time = "<<avg_response_time<<endl;
-    cout<<"CPU Utilization = "<<cpu_utilisation<<"%"<<endl;
-    cout<<"Throughput = "<<throughput<<" process/unit time"<<endl;
+    calculate_average(p,n);
+    print_table(p, n);
+    print_average(p, n);
 
 
 }
@@ -467,24 +440,9 @@ void P_Priority() {
         max_completion_time = max(max_completion_time,p[i].completion_time);
     }
 
-    avg_turnaround_time = (float) total_turnaround_time / n;
-    avg_waiting_time = (float) total_waiting_time / n;
-    avg_response_time = (float) total_response_time / n;
-    cpu_utilisation = ((max_completion_time - total_idle_time) / (float) max_completion_time )*100;
-    throughput = float(n) / (max_completion_time - min_arrival_time);
-
-    cout<<endl<<endl;
-
-    cout<<"#P\t"<<"AT\t"<<"BT\t"<<"PRI\t"<<"ST\t"<<"CT\t"<<"TAT\t"<<"WT\t"<<"RT\t"<<"\n"<<endl;
-
-    for(int i = 0; i < n; i++) {
-        cout<<p[i].pid<<"\t"<<p[i].arrival_time<<"\t"<<p[i].burst_time<<"\t"<<p[i].priority<<"\t"<<p[i].start_time<<"\t"<<p[i].completion_time<<"\t"<<p[i].turnaround_time<<"\t"<<p[i].waiting_time<<"\t"<<p[i].response_time<<"\t"<<"\n"<<endl;
-    }
-    cout<<"Average Turnaround Time = "<<avg_turnaround_time<<endl;
-    cout<<"Average Waiting Time = "<<avg_waiting_time<<endl;
-    cout<<"Average Response Time = "<<avg_response_time<<endl;
-    cout<<"CPU Utilization = "<<cpu_utilisation<<"%"<<endl;
-    cout<<"Throughput = "<<throughput<<" process/unit time"<<endl;
+    calculate_average(p,n);
+    print_table(p, n);
+    print_average(p, n);
 
 
 }
@@ -578,28 +536,14 @@ void round_robin(){
 
     }
 
-    avg_turnaround_time = (float) total_turnaround_time / n;
-    avg_waiting_time = (float) total_waiting_time / n;
-    avg_response_time = (float) total_response_time / n;
-    cpu_utilisation = ((p[n-1].completion_time - total_idle_time) / (float) p[n-1].completion_time)*100;
-    throughput = float(n) / (p[n-1].completion_time - p[0].arrival_time);
+    calculate_average(p,n);
 
     sort(p,p+n,compareID);
-
-    cout<<endl;
-    cout<<"#P\t"<<"AT\t"<<"BT\t"<<"ST\t"<<"CT\t"<<"TAT\t"<<"WT\t"<<"RT\t"<<"\n"<<endl;
-
-    for(int i = 0; i < n; i++) {
-        cout<<p[i].pid<<"\t"<<p[i].arrival_time<<"\t"<<p[i].burst_time<<"\t"<<p[i].start_time<<"\t"<<p[i].completion_time<<"\t"<<p[i].turnaround_time<<"\t"<<p[i].waiting_time<<"\t"<<p[i].response_time<<"\t"<<"\n"<<endl;
-    }
-    cout<<"Average Turnaround Time = "<<avg_turnaround_time<<endl;
-    cout<<"Average Waiting Time = "<<avg_waiting_time<<endl;
-    cout<<"Average Response Time = "<<avg_response_time<<endl;
-    cout<<"CPU Utilization = "<<cpu_utilisation<<"%"<<endl;
-    cout<<"Throughput = "<<throughput<<" process/unit time"<<endl;
-
+    print_table(p, n);
+    print_average(p, n);
 
 }
+
 
 //Driver Program
 int main(){
@@ -610,7 +554,7 @@ int ch, n;
  		cout<< "\n\n SIMULATION OF CPU SCHEDULING ALGORITHMS\n"; 
  		cout<< "\n Options:";  
  		cout<< "\n 1. FCFS"; 
- 		cout<< "\n 2. SJF (Pre-emptive)"; 
+ 		cout<< "\n 2. SJF"; 
  		cout<< "\n 3. Shortest Remaining Time First"; 
  		cout<< "\n 4. Priority Scheduling (Pre-emptive)"; 
  		cout<< "\n 5. Priority Scheduling (Non Pre-emptive)"; 
@@ -645,4 +589,4 @@ int ch, n;
 
 
 
-}
+}   
