@@ -1,8 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-//Global Scope Variables
+/* TAT = CT - AT
+WT = TAT - BT
+RT = ST - AT
+*/
 
+//Global Scope Variables
 int n;
 float avg_turnaround_time;
 float avg_waiting_time;
@@ -13,6 +17,7 @@ int total_waiting_time = 0;
 int total_response_time = 0;
 int total_idle_time = 0;
 float throughput;
+
 
 //Variable Structure
 struct process {
@@ -33,14 +38,17 @@ bool compareArrival(process p1, process p2)
     return p1.arrival_time < p2.arrival_time;
 }
 
+bool compareBurst(process p1, process p2)
+{
+    return p1.burst_time < p2.burst_time;
+}
 //Compare Process ID of the Processes
 bool compareID(process p1, process p2) 
 {  
     return p1.pid < p2.pid;
-
-
 }
 
+//Function to calculate average TAT, WT, RT and Cpu utilisation and throughput
 void calculate_average(process p[], int n){
     avg_turnaround_time = (float) total_turnaround_time / n;
     avg_waiting_time = (float) total_waiting_time / n;
@@ -49,6 +57,8 @@ void calculate_average(process p[], int n){
     throughput = float(n) / (p[n-1].completion_time - p[0].arrival_time);
 
 }
+
+//Function to print formatted table of the processes
 void print_table(process p[], int n){
 
     cout<<endl;
@@ -59,6 +69,7 @@ void print_table(process p[], int n){
     }
 }
 
+//Function to print the calculated average
 void print_average(process p[], int n){
 
     cout<<"Average Turnaround Time = "<<avg_turnaround_time<<endl;
@@ -68,10 +79,22 @@ void print_average(process p[], int n){
     cout<<"Throughput = "<<throughput<<" process/unit time"<<endl;
 }
 
+void min_max_arrival_completion(process p[], int n){
+    int min_arrival_time = 10000000;
+    int max_completion_time = -1;
+    for(int i = 0; i < n; i++) {
+        min_arrival_time = min(min_arrival_time,p[i].arrival_time);
+        max_completion_time = max(max_completion_time,p[i].completion_time);
+    }
+
+    cout << endl;
+    cout << "Maximum completion time = " << max_completion_time <<endl;
+    cout << "Minimum arrival time = " << min_arrival_time <<endl;
+}
+
 //First Come First Serve
 void FCFS() {
-
-   
+    cout << "\n\n\n\t ---First Come First Serve Scheduling--- \n\n" << endl ;
     struct process p[100];
 
     cout << setprecision(2) << fixed;
@@ -104,21 +127,49 @@ void FCFS() {
     }
 
     calculate_average(p,n);
-   
     sort(p,p+n,compareID);
-
     print_table(p, n);
-
     print_average(p, n);
 
-
+    int i, j;
+    // print top bar
+    cout << " ";
+    for(i=0; i<n; i++) {
+        for(j=0; j<p[i].burst_time; j++) printf("--");
+        cout << " ";
+    }
+    printf("\n|");
+ 
+    // printing process id in the middle
+    for(i=0; i<n; i++) {
+        for(j=0; j<p[i].burst_time - 1; j++) cout << " ";
+        cout << "P" << p[i].pid;
+        for(j=0; j<p[i].burst_time - 1; j++) cout << " " ;
+        cout << "|";
+    }
+    cout << "\n ";
+    // printing bottom bar
+    for(i=0; i<n; i++) {
+        for(j=0; j<p[i].burst_time; j++) printf("--");
+        cout << " ";
+    }
+    cout <<"\n";
+ 
+    // printing the time line
+    cout << "0";
+    for(i=0; i<n; i++) {
+        for(j=0; j<p[i].burst_time; j++) printf("  ");
+        if(p[i].completion_time > 9) printf("\b"); // backspace : remove 1 space
+        cout << p[i].completion_time;
+ 
+    }
+    printf("\n");
 }
-//Shortest Job First
-void SJF() {
-
+//Shortest Job First 
+ void SJF() {
     struct process p[100];
     int is_completed[100];
-    memset(is_completed,0,sizeof(is_completed));
+    memset(is_completed,0,sizeof(is_completed)); //Mark all the elements 'False' in the array is_completed
 
     cout << setprecision(2) << fixed;
 
@@ -138,11 +189,14 @@ void SJF() {
     int completed = 0;
     int prev = 0;
 
+//While all the processes are not completed 
+//find process with minimum burst time among process that are in ready queue at current_time
     while(completed != n) {
         int idx = -1;
         int mn = 10000000;
         for(int i = 0; i < n; i++) {
-            if(p[i].arrival_time <= current_time && is_completed[i] == 0) {
+            //If the process is not completed and it's arrival time is less than the current time
+            if(p[i].arrival_time <= current_time && is_completed[i] == 0) { 
                 if(p[i].burst_time < mn) {
                     mn = p[i].burst_time;
                     idx = i;
@@ -155,6 +209,7 @@ void SJF() {
                 }
             }
         }
+
         if(idx != -1) {
             p[idx].start_time = current_time;
             p[idx].completion_time = p[idx].start_time + p[idx].burst_time;
@@ -175,20 +230,12 @@ void SJF() {
         else {
             current_time++;
         }
-        
-    }
-
-    int min_arrival_time = 10000000;
-    int max_completion_time = -1;
-    for(int i = 0; i < n; i++) {
-        min_arrival_time = min(min_arrival_time,p[i].arrival_time);
-        max_completion_time = max(max_completion_time,p[i].completion_time);
-    }
-
+   
     calculate_average(p,n);
     print_table(p, n);
     print_average(p, n);
-
+    min_max_arrival_completion(p, n);
+    }
 }
 //Shortest Remaining Time First
 void SRTF() {
@@ -217,10 +264,12 @@ void SRTF() {
     int current_time = 0;
     int completed = 0;
     int prev = 0;
-
+    //find process with minimum burst time among process that are in ready queue at current_time
     while(completed != n) {
         int idx = -1;
         int mn = 10000000;
+
+        //Criteria for scheduling SRTF is burst time
         for(int i = 0; i < n; i++) {
             if(p[i].arrival_time <= current_time && is_completed[i] == 0) {
                 if(burst_remaining[i] < mn) {
@@ -236,6 +285,8 @@ void SRTF() {
             }
         }
 
+        //if process is getting CPU for the first time; start_time = current_time
+            
         if(idx != -1) {
             if(burst_remaining[idx] == p[idx].burst_time) {
                 p[idx].start_time = current_time;
@@ -245,6 +296,7 @@ void SRTF() {
             current_time++;
             prev = current_time;
             
+            //if burst_time = 0 then calcualate TAT, WT and RT for the process
             if(burst_remaining[idx] == 0) {
                 p[idx].completion_time = current_time;
                 p[idx].turnaround_time = p[idx].completion_time - p[idx].arrival_time;
@@ -255,7 +307,7 @@ void SRTF() {
                 total_waiting_time += p[idx].waiting_time;
                 total_response_time += p[idx].response_time;
 
-                is_completed[idx] = 1;
+                is_completed[idx] = 1; //mark process as completed
                 completed++;
             }
         }
@@ -264,17 +316,10 @@ void SRTF() {
         }  
     }
 
-    int min_arrival_time = 10000000;
-    int max_completion_time = -1;
-    for(int i = 0; i < n; i++) {
-        min_arrival_time = min(min_arrival_time,p[i].arrival_time);
-        max_completion_time = max(max_completion_time,p[i].completion_time);
-    }
-
     calculate_average(p,n);
     print_table(p, n);
     print_average(p, n);
-
+    min_max_arrival_completion(p,n);
 
 }
 //Non-Preemptive Priority
@@ -282,8 +327,8 @@ void NP_Priority() {
 
     struct process p[100];
     int is_completed[100];
-    //marking all elements in the array as 0
-    memset(is_completed,0,sizeof(is_completed));
+    
+    memset(is_completed,0,sizeof(is_completed)); //Mark all the elements 'False' in the array is_completed
 
     cout << setprecision(2) << fixed;
 
@@ -305,6 +350,7 @@ void NP_Priority() {
     int completed = 0;
     int prev = 0;
 
+   
     while(completed != n) {
         int idx = -1;
         int mx = -1;
@@ -322,6 +368,8 @@ void NP_Priority() {
                 }
             }
         }
+        //find process with maximum priority among process that are in ready queue at current_time
+        // and calculate CT,TAT,WT and RT for the process
         if(idx != -1) {
             p[idx].start_time = current_time;
             p[idx].completion_time = p[idx].start_time + p[idx].burst_time;
@@ -345,26 +393,20 @@ void NP_Priority() {
         
     }
 
-    int min_arrival_time = 10000000;
-    int max_completion_time = -1;
-    for(int i = 0; i < n; i++) {
-        min_arrival_time = min(min_arrival_time,p[i].arrival_time);
-        max_completion_time = max(max_completion_time,p[i].completion_time);
-    }
-
-    calculate_average(p,n);
+    calculate_average(p,n); 
     print_table(p, n);
     print_average(p, n);
-
+    min_max_arrival_completion(p,n);
 
 }
+
 //Preemptive Priority
 void P_Priority() {
 
     struct process p[100];
     int burst_remaining[100];
     int is_completed[100];
-    memset(is_completed,0,sizeof(is_completed));
+    memset(is_completed,0,sizeof(is_completed)); //Mark all the elements 'False' in the array is_completed
 
     cout << setprecision(2) << fixed;
 
@@ -431,22 +473,15 @@ void P_Priority() {
         else {
              current_time++;
         }  
-    }
-
-    int min_arrival_time = 10000000;
-    int max_completion_time = -1;
-    for(int i = 0; i < n; i++) {
-        min_arrival_time = min(min_arrival_time,p[i].arrival_time);
-        max_completion_time = max(max_completion_time,p[i].completion_time);
-    }
 
     calculate_average(p,n);
     print_table(p, n);
     print_average(p, n);
+    min_max_arrival_completion(p,n);
 
-
+    }
 }
-//Round Robin
+//Round Robin Scheduling
 void round_robin(){
 
     int tq; //initialise the variable for quantum time
@@ -503,7 +538,7 @@ void round_robin(){
         else {
             current_time += burst_remaining[idx]; //current_time = current_time + burst_remaining[idx]
             burst_remaining[idx] = 0; //Mark the element 'False'
-            completed++;
+            completed++; //completed + 1
 
             p[idx].completion_time = current_time;
             p[idx].turnaround_time = p[idx].completion_time - p[idx].arrival_time;
@@ -515,12 +550,15 @@ void round_robin(){
             total_response_time += p[idx].response_time;
         }
 
+        // If there are process with burst time remaining and arrival time <= current time 
+        //and if the process is at a false index push the element into the queue 
         for(int i = 1; i < n; i++) {
             if(burst_remaining[i] > 0 && p[i].arrival_time <= current_time && mark[i] == 0) {
                 q.push(i);
-                mark[i] = 1;
+                mark[i] = 1; //Mark the element 'True' 
             }
         }
+        //if burst_remaining element at front of the queue is greater than 0 then push the element into the queue from the waiting queue
         if(burst_remaining[idx] > 0) {
             q.push(idx);
         }
@@ -539,18 +577,15 @@ void round_robin(){
     }
 
     calculate_average(p,n);
-
     sort(p,p+n,compareID);
     print_table(p, n);
     print_average(p, n);
-
 }
-
 
 //Driver Program
 int main(){
 
-int ch, n; 
+int ch; 
     //Do-While loop for the Switch Menu
  	do { 
  		cout<< "\n\n SIMULATION OF CPU SCHEDULING ALGORITHMS\n"; 
@@ -588,7 +623,4 @@ int ch, n;
  		} 
  	} while (ch != 7); 
  	return 0;
-
-
-
 }   
